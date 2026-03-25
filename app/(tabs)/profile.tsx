@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -26,6 +25,7 @@ import { PrimaryButton } from '../../components/ui/PrimaryButton';
 import { useAuth } from '../../hooks/useAuth';
 import { supabase } from '../../lib/supabase';
 import { COLORS } from '../../lib/constants';
+import { AUTH_PROFILE_LINK_REDIRECT_URI } from '../../lib/authRedirects';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -69,6 +69,14 @@ export default function ProfileScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date(1990, 0, 1));
   const [showCountryPicker, setShowCountryPicker] = useState(false);
+
+  const DatePickerComponent = useMemo(() => {
+    try {
+      return require('@react-native-community/datetimepicker').default;
+    } catch {
+      return null;
+    }
+  }, []);
 
   const toStorageDate = (date: Date) => {
     const year = date.getFullYear();
@@ -142,7 +150,7 @@ export default function ProfileScreen() {
     }
   }, [profile?.name, profile?.email, user?.email, user?.user_metadata]);
 
-  const redirectUri = useMemo(() => 'bmate://profile', []);
+  const redirectUri = useMemo(() => AUTH_PROFILE_LINK_REDIRECT_URI, []);
   const linkedProviders = useMemo(() => user?.identities?.map((identity) => identity.provider) ?? [], [user?.identities]);
 
   useEffect(() => {
@@ -742,21 +750,40 @@ export default function ProfileScreen() {
               </Pressable>
             </View>
             <View style={styles.datePickerBody}>
-              <DateTimePicker
-                value={selectedDate}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
-                maximumDate={new Date()}
-                onChange={(event: DateTimePickerEvent, date?: Date) => {
-                  if (Platform.OS === 'android') {
-                    setShowDatePicker(false);
-                  }
-                  if (date) {
-                    setSelectedDate(date);
-                    setDob(toStorageDate(date));
-                  }
-                }}
-              />
+              {DatePickerComponent ? (
+                <DatePickerComponent
+                  value={selectedDate}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'calendar'}
+                  maximumDate={new Date()}
+                  onChange={(_: unknown, date?: Date) => {
+                    if (Platform.OS === 'android') {
+                      setShowDatePicker(false);
+                    }
+                    if (date) {
+                      setSelectedDate(date);
+                      setDob(toStorageDate(date));
+                    }
+                  }}
+                />
+              ) : (
+                <View style={styles.datePickerFallbackWrap}>
+                  <Text style={styles.datePickerFallbackText}>Calendar unavailable on this build.</Text>
+                  <TextInput
+                    value={dob ? toDisplayDate(dob) : ''}
+                    onChangeText={(value) => {
+                      const trimmed = value.trim();
+                      if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) {
+                        const [day, month, year] = trimmed.split('/');
+                        setDob(`${year}-${month}-${day}`);
+                      }
+                    }}
+                    placeholder="DD/MM/YYYY"
+                    placeholderTextColor="#94A3B8"
+                    style={styles.datePickerFallbackInput}
+                  />
+                </View>
+              )}
             </View>
             {Platform.OS === 'ios' && (
               <Pressable
@@ -1025,10 +1052,21 @@ const styles = StyleSheet.create({
   datePickerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
   datePickerTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text },
   datePickerBody: { paddingHorizontal: 8, paddingVertical: 10, alignItems: 'center' },
+  datePickerFallbackWrap: { width: '100%', paddingHorizontal: 12, gap: 8 },
+  datePickerFallbackText: { color: '#64748B', fontSize: 12, fontWeight: '600' },
+  datePickerFallbackInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: COLORS.text,
+    fontWeight: '600'
+  },
   datePickerLabel: { color: '#475569', fontSize: 12, fontWeight: '700' },
   datePickerInput: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, color: COLORS.text, fontWeight: '600', fontSize: 14 },
   datePickerHint: { color: '#94A3B8', fontSize: 11, fontWeight: '500', marginTop: 4 },
   datePickerButton: { backgroundColor: COLORS.primary, borderRadius: 12, marginHorizontal: 16, marginBottom: 16, paddingVertical: 12, alignItems: 'center' },
   datePickerButtonText: { color: '#FFFFFF', fontWeight: '700', fontSize: 16 },
 });
-

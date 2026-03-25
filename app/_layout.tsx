@@ -33,6 +33,8 @@ export default function RootLayout() {
             <Stack.Screen name="auth" />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen name="payment" />
+            <Stack.Screen name="community-chat" />
+            <Stack.Screen name="community-chat/[groupId]" />
           </Stack>
         </AuthProvider>
       </SafeAreaProvider>

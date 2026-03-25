@@ -41,6 +41,12 @@ export function ItemIcon({ itemId, size = 44 }: ItemIconProps) {
     28: BreadIcon,
     29: QuinoaIcon,
     30: PumpkinIcon,
+    31: AvocadoIcon,
+    32: ChickpeasIcon,
+    33: PaneerIcon,
+    34: PeanutButterIcon,
+    35: SandwichIcon,
+    36: SeedsIcon,
   };
 
   const IconComponent = iconMap[itemId];
@@ -626,6 +632,83 @@ function PumpkinIcon({ size, color }: any) {
       <Rect x="48" y="32" width="4" height="12" fill="#16A34A" opacity="0.7" />
       {/* Leaf */}
       <Path d="M54 38 Q62 32 65 42 Q60 45 54 40 Z" fill="#16A34A" opacity="0.6" />
+    </Svg>
+  );
+}
+
+function AvocadoIcon({ size, color }: any) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Circle cx="50" cy="50" r="48" fill={color} opacity="0.1" />
+      <Path d="M50 24 Q68 34 68 54 Q68 73 50 78 Q32 73 32 54 Q32 34 50 24 Z" fill={color} opacity="0.9" />
+      <Circle cx="50" cy="56" r="9" fill="white" opacity="0.45" />
+      <Circle cx="50" cy="56" r="4" fill={color} opacity="0.7" />
+    </Svg>
+  );
+}
+
+function ChickpeasIcon({ size, color }: any) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Circle cx="50" cy="50" r="48" fill={color} opacity="0.1" />
+      <Path d="M30 52 Q30 68 50 74 Q70 68 70 52" fill={color} opacity="0.3" stroke={color} strokeWidth="1.5" />
+      {[...Array(12)].map((_, i) => (
+        <Circle key={i} cx={34 + (i % 4) * 8} cy={50 + Math.floor(i / 4) * 7} r="2.3" fill={color} opacity="0.85" />
+      ))}
+    </Svg>
+  );
+}
+
+function PaneerIcon({ size, color }: any) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Circle cx="50" cy="50" r="48" fill={color} opacity="0.1" />
+      <Rect x="34" y="36" width="32" height="30" rx="4" fill={color} opacity="0.85" />
+      {[...Array(6)].map((_, i) => (
+        <Circle key={i} cx={40 + (i % 3) * 9} cy={43 + Math.floor(i / 3) * 10} r="1.6" fill="white" opacity="0.45" />
+      ))}
+    </Svg>
+  );
+}
+
+function PeanutButterIcon({ size, color }: any) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Circle cx="50" cy="50" r="48" fill={color} opacity="0.1" />
+      <Rect x="36" y="32" width="28" height="36" rx="5" fill={color} opacity="0.85" />
+      <Rect x="39" y="27" width="22" height="6" rx="2" fill={color} opacity="0.6" />
+      <Line x1="42" y1="46" x2="58" y2="46" stroke="white" strokeWidth="1.2" opacity="0.45" />
+      <Line x1="42" y1="53" x2="56" y2="53" stroke="white" strokeWidth="1.2" opacity="0.45" />
+    </Svg>
+  );
+}
+
+function SandwichIcon({ size, color }: any) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Circle cx="50" cy="50" r="48" fill={color} opacity="0.1" />
+      <Path d="M30 58 Q36 42 50 42 Q64 42 70 58 Z" fill={color} opacity="0.85" />
+      <Rect x="32" y="58" width="36" height="9" rx="2" fill={color} opacity="0.7" />
+      <Line x1="38" y1="54" x2="62" y2="54" stroke="white" strokeWidth="1.2" opacity="0.45" />
+    </Svg>
+  );
+}
+
+function SeedsIcon({ size, color }: any) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      <Circle cx="50" cy="50" r="48" fill={color} opacity="0.1" />
+      {[...Array(14)].map((_, i) => (
+        <Ellipse
+          key={i}
+          cx={34 + (i % 5) * 8}
+          cy={40 + Math.floor(i / 5) * 10}
+          rx="2.2"
+          ry="3.4"
+          fill={color}
+          opacity="0.9"
+        />
+      ))}
     </Svg>
   );
 }

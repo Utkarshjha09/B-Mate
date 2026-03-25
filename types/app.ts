@@ -110,7 +110,9 @@ export type DailyMenuItem = {
   id: number;
   mess_id: number;
   item_name: string;
-  category: 'breakfast' | 'lunch' | 'dinner';
+  category: 'breakfast' | 'lunch' | 'snacks' | 'dinner';
+  day_of_week?: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
+  diet_type?: 'veg' | 'non_veg';
   is_special: boolean;
   description?: string;
   image?: string;

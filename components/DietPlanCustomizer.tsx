@@ -20,9 +20,10 @@ type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 interface DietPlanCustomizerProps {
   onClose: () => void;
   onSavePlan?: (plan: DietPlan) => void;
+  onCreateSubscription?: (payload: { planName: string; monthlyAmount: number; dailyAmount: number }) => void;
 }
 
-export function DietPlanCustomizer({ onClose, onSavePlan }: DietPlanCustomizerProps) {
+export function DietPlanCustomizer({ onClose, onSavePlan, onCreateSubscription }: DietPlanCustomizerProps) {
   const [macroItems, setMacroItems] = useState<MacroItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('protein');
   const [loading, setLoading] = useState(true);
@@ -44,7 +45,15 @@ export function DietPlanCustomizer({ onClose, onSavePlan }: DietPlanCustomizerPr
       if (result.error) {
         setMacroItems(fallbackData.macroItems);
       } else {
-        setMacroItems((result.data as MacroItem[]) ?? fallbackData.macroItems);
+        const remote = (result.data as MacroItem[]) ?? [];
+        const merged = [...remote];
+        const ids = new Set(remote.map((item) => item.id));
+        fallbackData.macroItems.forEach((item) => {
+          if (!ids.has(item.id)) {
+            merged.push(item);
+          }
+        });
+        setMacroItems(merged);
       }
     } catch {
       setMacroItems(fallbackData.macroItems);
@@ -89,6 +98,7 @@ export function DietPlanCustomizer({ onClose, onSavePlan }: DietPlanCustomizerPr
 
   const handleSavePlan = async () => {
     const totals = calculateTotals();
+    const monthlyAmount = Math.max(99, Math.round(totalPrice * 26 * 0.9));
     const plan: DietPlan = {
       id: `plan_${Date.now()}`,
       user_id: 'current_user',
@@ -103,13 +113,21 @@ export function DietPlanCustomizer({ onClose, onSavePlan }: DietPlanCustomizerPr
     if (onSavePlan) {
       onSavePlan(plan);
     }
+    if (onCreateSubscription) {
+      onCreateSubscription({
+        planName: plan.name,
+        monthlyAmount,
+        dailyAmount: totalPrice
+      });
+    }
     onClose();
   };
 
   const totals = calculateTotals();
   
   // Calculate price based on items (default: ₹50 per item)
-  const totalPrice = dietItems.length * 50;
+  const totalPrice = dietItems.length * 20;
+  const monthlySubscriptionPrice = Math.max(99, Math.round(totalPrice * 26 * 0.9));
 
   if (loading) {
     return <LoadingState label="Loading food items..." />;
@@ -358,7 +376,7 @@ export function DietPlanCustomizer({ onClose, onSavePlan }: DietPlanCustomizerPr
             </View>
 
             <PrimaryButton
-              label="Create Diet Plan"
+              label="Create Subscription"
               onPress={handleSavePlan}
               style={styles.saveButton}
             />
@@ -422,7 +440,7 @@ export function DietPlanCustomizer({ onClose, onSavePlan }: DietPlanCustomizerPr
                     </View>
                     <View style={styles.priceCell}>
                       <Text style={styles.priceLabel}>Monthly</Text>
-                      <Text style={styles.priceValue}>₹{(totalPrice * 30).toFixed(0)}</Text>
+                      <Text style={styles.priceValue}>₹{monthlySubscriptionPrice.toFixed(0)}</Text>
                     </View>
                   </View>
                 </View>
@@ -450,7 +468,7 @@ export function DietPlanCustomizer({ onClose, onSavePlan }: DietPlanCustomizerPr
                 </View>
 
                 <PrimaryButton
-                  label="Save Diet Plan"
+                  label="Create Subscription"
                   onPress={handleSavePlan}
                   style={styles.saveButton}
                 />
@@ -829,3 +847,5 @@ const styles = StyleSheet.create({
     fontWeight: '800'
   }
 });
+
+

@@ -85,11 +85,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     setError(null);
-    const { error: signInError } = await authService.signIn(email, password);
+    const { data, error: signInError } = await authService.signIn(email, password);
     if (signInError) {
       setError(signInError.message);
       throw signInError;
     }
+
+    // In some release builds, onAuthStateChange can be delayed; set session eagerly.
+    if (data?.session) {
+      setSession(data.session);
+      await authService.saveSession(data.session);
+      if (data.session.user?.id) {
+        const fetchedProfile = await authService.fetchProfile(data.session.user.id);
+        setProfile(fetchedProfile);
+      }
+    }
+
     setIsBypassEnabled(false);
     await AsyncStorage.removeItem(STORAGE_KEYS.authBypass);
   };

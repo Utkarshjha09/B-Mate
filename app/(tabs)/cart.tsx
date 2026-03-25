@@ -31,6 +31,19 @@ export default function CartScreen() {
   const [waterItems, setWaterItems] = useState<WaterProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const withTimeout = async <T,>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(message)), ms);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    }
+  };
 
   const loadCart = async () => {
     if (!cartUserId) {
@@ -40,11 +53,11 @@ export default function CartScreen() {
 
     setLoading(true);
     try {
-      const [cartRes, foodRes, waterRes] = await Promise.all([
-        appService.getCart(cartUserId),
-        appService.getFoodItems(),
-        appService.getWaterProducts()
-      ]);
+      const [cartRes, foodRes, waterRes] = await withTimeout(
+        Promise.all([appService.getCart(cartUserId), appService.getFoodItems(), appService.getWaterProducts()]),
+        3500,
+        'Cart data request timed out'
+      );
 
       setCartItems((cartRes.data as CartItem[]) ?? []);
       setFoodItems((foodRes.data as FoodItem[]) ?? fallbackData.foodItems);

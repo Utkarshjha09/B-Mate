@@ -3,6 +3,14 @@ import { supabase } from '../lib/supabase';
 import { AppOrder, CartItem, FoodItem, LaundryService, SubscriptionPlan, WaterProduct, Mess, DailyMenuItem, MacroItem, DietPlan, LaundryItem, TimeSlot } from '../types/app';
 
 const BYPASS_CART_KEY = 'bmate.local.cart';
+const PRICE_MULTIPLIER = 0.75;
+
+function discountedPrice(value: number) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.round(value * PRICE_MULTIPLIER));
+}
 
 async function getLocalCart() {
   const raw = await AsyncStorage.getItem(BYPASS_CART_KEY);
@@ -74,15 +82,37 @@ async function clearLocalUserCart(userId: string) {
 
 export const appService = {
   async getFoodItems() {
-    return supabase.from('food_items').select('*').order('id');
+    const response = await supabase.from('food_items').select('*').order('id');
+    if (response.data) {
+      response.data = (response.data as FoodItem[]).map((item) => ({
+        ...item,
+        price: discountedPrice(item.price)
+      }));
+    }
+    return response;
   },
 
   async getSubscriptions() {
-    return supabase.from('subscriptions').select('*').order('id');
+    const response = await supabase.from('subscriptions').select('*').order('id');
+    if (response.data) {
+      response.data = (response.data as SubscriptionPlan[]).map((plan) => ({
+        ...plan,
+        price_weekly: discountedPrice(plan.price_weekly),
+        price_monthly: discountedPrice(plan.price_monthly)
+      }));
+    }
+    return response;
   },
 
   async getMesses() {
-    return supabase.from('messes').select('*').order('id');
+    const response = await supabase.from('messes').select('*').order('id');
+    if (response.data) {
+      response.data = (response.data as Mess[]).map((mess) => ({
+        ...mess,
+        charges_per_week: discountedPrice(mess.charges_per_week)
+      }));
+    }
+    return response;
   },
 
   async getDailyMenu(messId: number) {
@@ -90,11 +120,25 @@ export const appService = {
   },
 
   async getLaundryServices() {
-    return supabase.from('laundry_services').select('*').order('id');
+    const response = await supabase.from('laundry_services').select('*').order('id');
+    if (response.data) {
+      response.data = (response.data as LaundryService[]).map((service) => ({
+        ...service,
+        price: discountedPrice(service.price)
+      }));
+    }
+    return response;
   },
 
   async getLaundryItems() {
-    return supabase.from('laundry_items').select('*').order('id');
+    const response = await supabase.from('laundry_items').select('*').order('id');
+    if (response.data) {
+      response.data = (response.data as LaundryItem[]).map((item) => ({
+        ...item,
+        price: discountedPrice(item.price)
+      }));
+    }
+    return response;
   },
 
   async getTimeSlots() {
@@ -102,7 +146,14 @@ export const appService = {
   },
 
   async getWaterProducts() {
-    return supabase.from('water_products').select('*').order('id');
+    const response = await supabase.from('water_products').select('*').order('id');
+    if (response.data) {
+      response.data = (response.data as WaterProduct[]).map((item) => ({
+        ...item,
+        price: discountedPrice(item.price)
+      }));
+    }
+    return response;
   },
 
   async getCart(userId: string) {
@@ -191,7 +242,7 @@ export const fallbackData = {
     {
       id: 1,
       name: "Today's Basic Meal",
-      price: 60,
+      price: 49,
       image: 'https://images.unsplash.com/photo-1576867757603-05b134ebc379?auto=format&fit=crop&w=900&q=80',
       tags: ['Budget Friendly', 'Veg'],
       rating: 4.2,
@@ -201,20 +252,92 @@ export const fallbackData = {
     {
       id: 2,
       name: 'Special Veg Meal',
-      price: 110,
+      price: 89,
       image: 'https://images.unsplash.com/photo-1567521464027-f127ff144326?auto=format&fit=crop&w=900&q=80',
       tags: ['Veg', 'Special'],
       rating: 4.8,
       calories: 650,
       prep_time: '35-50 min'
+    },
+    {
+      id: 3,
+      name: 'Paneer Rice Bowl',
+      price: 79,
+      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80',
+      tags: ['High Protein', 'Veg'],
+      rating: 4.6,
+      calories: 520,
+      prep_time: '20-30 min'
+    },
+    {
+      id: 4,
+      name: 'Chicken Thali',
+      price: 99,
+      image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=900&q=80',
+      tags: ['Non-Veg', 'Popular'],
+      rating: 4.7,
+      calories: 690,
+      prep_time: '30-40 min'
+    },
+    {
+      id: 5,
+      name: 'South Indian Combo',
+      price: 69,
+      image: 'https://images.unsplash.com/photo-1610192244261-3f33de3f55e4?auto=format&fit=crop&w=900&q=80',
+      tags: ['Light', 'Veg'],
+      rating: 4.4,
+      calories: 410,
+      prep_time: '20-25 min'
+    },
+    {
+      id: 6,
+      name: 'Egg Protein Box',
+      price: 74,
+      image: 'https://images.unsplash.com/photo-1582169505937-b9992bd01ed9?auto=format&fit=crop&w=900&q=80',
+      tags: ['Protein', 'Budget'],
+      rating: 4.3,
+      calories: 470,
+      prep_time: '15-25 min'
+    },
+    {
+      id: 7,
+      name: 'Veg Wrap Meal',
+      price: 59,
+      image: 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?auto=format&fit=crop&w=900&q=80',
+      tags: ['Snack Meal', 'Veg'],
+      rating: 4.2,
+      calories: 360,
+      prep_time: '15-20 min'
+    },
+    {
+      id: 8,
+      name: 'Fruit + Yogurt Bowl',
+      price: 54,
+      image: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=900&q=80',
+      tags: ['Healthy', 'Breakfast'],
+      rating: 4.5,
+      calories: 310,
+      prep_time: '10-15 min'
     }
   ] satisfies FoodItem[],
   subscriptions: [
     {
       id: 1,
-      type: 'Basic Meal Plan',
-      price_weekly: 399,
-      price_monthly: 1599
+      type: 'Starter Plan',
+      price_weekly: 299,
+      price_monthly: 1099
+    },
+    {
+      id: 2,
+      type: 'Smart Plan',
+      price_weekly: 499,
+      price_monthly: 1799
+    },
+    {
+      id: 3,
+      type: 'Pro Plan',
+      price_weekly: 699,
+      price_monthly: 2499
     }
   ] satisfies SubscriptionPlan[],
   messes: [
@@ -222,7 +345,7 @@ export const fallbackData = {
       id: 1,
       name: 'North Campus Mess',
       rating: 4.5,
-      charges_per_week: 700,
+      charges_per_week: 520,
       image: 'https://images.unsplash.com/photo-1517521318897-7d2850a30c90?auto=format&fit=crop&w=900&q=80',
       description: 'Budget friendly quality meals'
     },
@@ -230,7 +353,7 @@ export const fallbackData = {
       id: 2,
       name: 'South Campus Mess',
       rating: 4.3,
-      charges_per_week: 750,
+      charges_per_week: 560,
       image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80',
       description: 'Premium dining experience'
     },
@@ -238,7 +361,7 @@ export const fallbackData = {
       id: 3,
       name: 'East Wing Mess',
       rating: 4.7,
-      charges_per_week: 650,
+      charges_per_week: 490,
       image: 'https://images.unsplash.com/photo-1504674900949-f282474e37ff?auto=format&fit=crop&w=900&q=80',
       description: 'Homestyle authentic meals'
     }
@@ -281,13 +404,37 @@ export const fallbackData = {
       item_name: 'Biryani',
       category: 'dinner' as const,
       is_special: false
+    },
+    {
+      id: 6,
+      mess_id: 3,
+      item_name: 'Poha + Sprouts',
+      category: 'breakfast' as const,
+      is_special: false,
+      description: 'Light and healthy breakfast combo'
+    },
+    {
+      id: 7,
+      mess_id: 3,
+      item_name: 'Rajma Rice',
+      category: 'lunch' as const,
+      is_special: true,
+      description: 'Protein rich rajma with steamed rice'
+    },
+    {
+      id: 8,
+      mess_id: 3,
+      item_name: 'Roti + Mixed Veg + Dal',
+      category: 'dinner' as const,
+      is_special: false,
+      description: 'Balanced dinner plate'
     }
   ] satisfies DailyMenuItem[],
   laundryServices: [
     {
       id: 1,
       name: 'Wash & Fold',
-      price: 25,
+      price: 19,
       description: 'Everyday clothes'
     },
     {
@@ -299,7 +446,7 @@ export const fallbackData = {
     {
       id: 3,
       name: 'Dry Cleaning',
-      price: 120,
+      price: 89,
       description: 'Suits, dresses, delicate fabrics'
     }
   ] satisfies LaundryService[],
@@ -309,7 +456,7 @@ export const fallbackData = {
       name: 'Chilled Water Container',
       volume: '20 Liters',
       temp: 'Chilled (5C)',
-      price: 80,
+      price: 59,
       image: 'https://images.unsplash.com/photo-1624392294437-8fc9f876f4d3?auto=format&fit=crop&w=900&q=80'
     },
     {
@@ -317,7 +464,7 @@ export const fallbackData = {
       name: 'Regular Water Container',
       volume: '20 Liters',
       temp: 'Room Temp',
-      price: 40,
+      price: 29,
       image: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&w=900&q=80'
     },
     {
@@ -325,7 +472,7 @@ export const fallbackData = {
       name: 'Insulated Hot Water',
       volume: '5 Liters',
       temp: 'Hot (80C)',
-      price: 130,
+      price: 95,
       image: 'https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=900&q=80'
     }
   ] satisfies WaterProduct[],
@@ -688,6 +835,78 @@ export const fallbackData = {
       calories: 26,
       serving_size: '100g',
       description: 'Beta carotene packed'
+    },
+    {
+      id: 31,
+      name: 'Avocado',
+      image: 'https://images.unsplash.com/photo-1519162808019-7de1683fa2ad?auto=format&fit=crop&w=900&q=80',
+      category: 'fruit' as const,
+      protein: 2,
+      carbs: 9,
+      fat: 15,
+      calories: 160,
+      serving_size: '100g',
+      description: 'Healthy fats for satiety'
+    },
+    {
+      id: 32,
+      name: 'Chickpeas',
+      image: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e4?auto=format&fit=crop&w=900&q=80',
+      category: 'protein' as const,
+      protein: 8.9,
+      carbs: 27,
+      fat: 2.6,
+      calories: 164,
+      serving_size: '100g cooked',
+      description: 'Plant protein plus fiber'
+    },
+    {
+      id: 33,
+      name: 'Paneer Cubes',
+      image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?auto=format&fit=crop&w=900&q=80',
+      category: 'dairy' as const,
+      protein: 18,
+      carbs: 1.2,
+      fat: 20,
+      calories: 265,
+      serving_size: '100g',
+      description: 'High protein dairy option'
+    },
+    {
+      id: 34,
+      name: 'Peanut Butter',
+      image: 'https://images.unsplash.com/photo-1622484212850-eb596d769edc?auto=format&fit=crop&w=900&q=80',
+      category: 'protein' as const,
+      protein: 25,
+      carbs: 20,
+      fat: 50,
+      calories: 588,
+      serving_size: '100g',
+      description: 'Energy-dense spread'
+    },
+    {
+      id: 35,
+      name: 'Cottage Cheese Sandwich',
+      image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=900&q=80',
+      category: 'grain' as const,
+      protein: 12,
+      carbs: 30,
+      fat: 8,
+      calories: 245,
+      serving_size: '1 sandwich',
+      description: 'Quick balanced meal'
+    },
+    {
+      id: 36,
+      name: 'Mixed Seeds',
+      image: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=900&q=80',
+      category: 'fruit' as const,
+      protein: 20,
+      carbs: 18,
+      fat: 42,
+      calories: 510,
+      serving_size: '100g',
+      description: 'Nutrient-dense snack mix'
     }
   ] satisfies MacroItem[],
   recentOrders: [

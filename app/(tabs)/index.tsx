@@ -1,13 +1,14 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Path } from 'react-native-svg';
 
 import { AppCard } from '../../components/ui/AppCard';
 import { AppLogo } from '../../components/ui/AppLogo';
+import { CommunityChatIcon } from '../../components/ui/SvgIcons';
 import { COLORS, GRADIENTS } from '../../lib/constants';
 
 export default function HomeScreen() {
@@ -25,6 +26,9 @@ export default function HomeScreen() {
                 <Text style={styles.brandTag}>Student Services</Text>
               </View>
             </View>
+            <Pressable onPress={() => router.push('/community-chat')} style={styles.chatIconButton}>
+              <CommunityChatIcon size={18} color="#6D28D9" />
+            </Pressable>
           </View>
           <Text style={styles.greeting}>Good Morning, Mate!</Text>
           <Text style={styles.subtle}>Welcome to B mate. What do you need?</Text>
@@ -105,10 +109,20 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#ECEFF5' },
   content: { paddingHorizontal: 18, paddingBottom: 24 },
   header: { marginTop: 8, marginBottom: 14 },
-  headerTop: { marginBottom: 8 },
+  headerTop: { marginBottom: 8, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   brandName: { color: '#312E81', fontSize: 16, fontWeight: '800' },
   brandTag: { color: '#64748B', fontSize: 11, fontWeight: '600' },
+  chatIconButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C4B5FD'
+  },
   greeting: { fontSize: 30, lineHeight: 36, fontWeight: '800', color: COLORS.text },
   subtle: { marginTop: 6, fontSize: 14, color: COLORS.muted, fontWeight: '500' },
   highlightCard: { borderRadius: 22, padding: 20, minHeight: 248, overflow: 'hidden' },

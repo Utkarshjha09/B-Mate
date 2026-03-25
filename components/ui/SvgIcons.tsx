@@ -1,5 +1,5 @@
 import React from 'react';
-import Svg, { Path, Circle } from 'react-native-svg';
+import Svg, { Path, Circle, Rect } from 'react-native-svg';
 
 export function ChevronDownIcon({ size = 24, color = '#9333EA' }: { size?: number; color?: string }) {
   return (
@@ -166,6 +166,150 @@ export function NutritionIcon({ size = 32, color = '#FFFFFF' }: { size?: number;
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </Svg>
+  );
+}
+
+export function StarterPlanIcon({ size = 18, color = '#7C3AED' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 3L13.9 8.1L19 10L13.9 11.9L12 17L10.1 11.9L5 10L10.1 8.1L12 3Z"
+        stroke={color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function SmartPlanIcon({ size = 18, color = '#7C3AED' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 3L20 7.5V16.5L12 21L4 16.5V7.5L12 3Z"
+        stroke={color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M8.5 12.5L10.7 14.7L15.5 9.9"
+        stroke={color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function ProPlanIcon({ size = 18, color = '#7C3AED' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 4L14.8 9.2L20.5 10.1L16.4 14.1L17.3 19.8L12 17.2L6.7 19.8L7.6 14.1L3.5 10.1L9.2 9.2L12 4Z"
+        stroke={color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function CommunityChatIcon({ size = 20, color = '#7C3AED' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M7.5 8.5h9M7.5 12h5" stroke={color} strokeWidth={1.7} strokeLinecap="round" />
+      <Path
+        d="M6 5h12a2 2 0 012 2v7a2 2 0 01-2 2h-4.5l-3.2 2.6c-.66.54-1.64.07-1.64-.79V16H6a2 2 0 01-2-2V7a2 2 0 012-2z"
+        stroke={color}
+        strokeWidth={1.7}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function MessMenuIcon({ size = 18, color = '#7C3AED' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M8 6h10M8 10h10M8 14h10M5 6h.01M5 10h.01M5 14h.01" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      <Path d="M4 4h16v16H4z" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+export function RatingStarIcon({ size = 18, color = '#F59E0B' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2 7.5 14 3 9.6l6.2-.9L12 3z"
+        stroke={color}
+        strokeWidth={1.6}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function PriceTagIcon({ size = 18, color = '#7C3AED' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M4 7V4h3l10 10-3 3L4 7z" stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+      <Circle cx="8.5" cy="8.5" r="1.2" fill={color} />
+      <Path d="M14.5 6.5v10M11.8 8.8h4.2" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function HelpDeskIcon({ size = 18, color = '#7C3AED' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx="12" cy="12" r="8" stroke={color} strokeWidth={1.7} />
+      <Path d="M12 8v4l2.5 2.5" stroke={color} strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
+      <Path d="M4 8.5a8.5 8.5 0 0116 0" stroke={color} strokeWidth={1.6} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function CareerIcon({ size = 18, color = '#7C3AED' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="4" y="7" width="16" height="12" rx="2" stroke={color} strokeWidth={1.7} />
+      <Path d="M9 7V5.5A1.5 1.5 0 0110.5 4h3A1.5 1.5 0 0115 5.5V7" stroke={color} strokeWidth={1.7} />
+      <Path d="M4 12h16" stroke={color} strokeWidth={1.5} />
+      <Path d="M11 12h2v2h-2z" stroke={color} strokeWidth={1.4} />
+    </Svg>
+  );
+}
+
+export function EventsIcon({ size = 18, color = '#7C3AED' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x="4" y="5" width="16" height="15" rx="2" stroke={color} strokeWidth={1.7} />
+      <Path d="M8 3v4M16 3v4M4 9h16" stroke={color} strokeWidth={1.7} strokeLinecap="round" />
+      <Path d="M9.5 14h5M9.5 17h3" stroke={color} strokeWidth={1.6} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function AttachmentAddIcon({ size = 20, color = '#6D28D9' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M9.4 8.8l4.7-4.7a3 3 0 114.2 4.2l-7.1 7.1a4.2 4.2 0 11-5.9-5.9l6.6-6.6"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Circle cx="18.4" cy="18.4" r="3.3" fill={color} />
+      <Path d="M18.4 16.9v3M16.9 18.4h3" stroke="#FFFFFF" strokeWidth={1.4} strokeLinecap="round" />
     </Svg>
   );
 }

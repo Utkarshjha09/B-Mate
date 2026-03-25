@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +16,12 @@ type PaymentMethod = 'upi' | 'card' | 'cod';
 export default function PaymentScreen() {
   const { user, isBypassEnabled } = useAuth();
   const cartUserId = user?.id ?? (isBypassEnabled ? 'bypass-user' : null);
+  const params = useLocalSearchParams<{
+    directType?: string;
+    directTitle?: string;
+    directAmount?: string;
+    directPeriod?: string;
+  }>();
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
@@ -24,7 +30,15 @@ export default function PaymentScreen() {
   const [placingOrder, setPlacingOrder] = useState(false);
   const [method, setMethod] = useState<PaymentMethod>('upi');
 
+  const directAmount = Number(params.directAmount || 0);
+  const isDirectPayment = Number.isFinite(directAmount) && directAmount > 0;
+
   const loadData = async () => {
+    if (isDirectPayment) {
+      setLoading(false);
+      return;
+    }
+
     if (!cartUserId) {
       setLoading(false);
       return;
@@ -52,7 +66,7 @@ export default function PaymentScreen() {
 
   useEffect(() => {
     loadData();
-  }, [cartUserId]);
+  }, [cartUserId, isDirectPayment]);
 
   const summary = useMemo(() => {
     const foodById = new Map(foodItems.map((f) => [f.id, f]));
@@ -81,12 +95,36 @@ export default function PaymentScreen() {
     });
 
     const subtotal = foodTotal + waterTotal;
-    const delivery = subtotal > 0 ? 20 : 0;
+    const delivery = subtotal > 0 ? 10 : 0;
     const total = subtotal + delivery;
     return { foodTotal, waterTotal, quantity, subtotal, delivery, total };
   }, [cartItems, foodItems, waterItems]);
 
   const placeOrder = async () => {
+    if (isDirectPayment) {
+      setPlacingOrder(true);
+      try {
+        if (cartUserId && !cartUserId.startsWith('bypass-')) {
+          const { error } = await appService.createOrder({
+            user_id: cartUserId,
+            type: 'food',
+            total: directAmount,
+            status: 'pending'
+          });
+          if (error) {
+            throw error;
+          }
+        }
+        Alert.alert('Payment Successful', `${params.directTitle || 'Subscription'} activated.`);
+        router.replace('/(tabs)/food');
+      } catch (error) {
+        Alert.alert('Payment failed', error instanceof Error ? error.message : 'Please try again.');
+      } finally {
+        setPlacingOrder(false);
+      }
+      return;
+    }
+
     if (!cartUserId || summary.total <= 0) {
       return;
     }
@@ -152,22 +190,41 @@ export default function PaymentScreen() {
 
         <AppCard style={styles.summaryCard}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
-          <View style={styles.row}>
-            <Text style={styles.label}>Items</Text>
-            <Text style={styles.value}>{summary.quantity}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Subtotal</Text>
-            <Text style={styles.value}>Rs {summary.subtotal}</Text>
-          </View>
-          <View style={styles.row}>
-            <Text style={styles.label}>Delivery</Text>
-            <Text style={styles.value}>Rs {summary.delivery}</Text>
-          </View>
-          <View style={[styles.row, styles.totalRow]}>
-            <Text style={styles.totalLabel}>Payable Total</Text>
-            <Text style={styles.totalValue}>Rs {summary.total}</Text>
-          </View>
+          {isDirectPayment ? (
+            <>
+              <View style={styles.row}>
+                <Text style={styles.label}>Plan</Text>
+                <Text style={styles.value}>{params.directTitle || 'Custom Subscription'}</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Billing</Text>
+                <Text style={styles.value}>{params.directPeriod || 'monthly'}</Text>
+              </View>
+              <View style={[styles.row, styles.totalRow]}>
+                <Text style={styles.totalLabel}>Payable Total</Text>
+                <Text style={styles.totalValue}>Rs {directAmount}</Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.row}>
+                <Text style={styles.label}>Items</Text>
+                <Text style={styles.value}>{summary.quantity}</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Subtotal</Text>
+                <Text style={styles.value}>Rs {summary.subtotal}</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.label}>Delivery</Text>
+                <Text style={styles.value}>Rs {summary.delivery}</Text>
+              </View>
+              <View style={[styles.row, styles.totalRow]}>
+                <Text style={styles.totalLabel}>Payable Total</Text>
+                <Text style={styles.totalValue}>Rs {summary.total}</Text>
+              </View>
+            </>
+          )}
         </AppCard>
 
         <AppCard style={styles.methodsCard}>
@@ -179,7 +236,11 @@ export default function PaymentScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <PrimaryButton label={placingOrder ? 'Processing...' : 'Pay & Place Order'} onPress={placeOrder} disabled={placingOrder || summary.total <= 0} />
+        <PrimaryButton
+          label={placingOrder ? 'Processing...' : isDirectPayment ? 'Pay & Activate Subscription' : 'Pay & Place Order'}
+          onPress={placeOrder}
+          disabled={placingOrder || (!isDirectPayment && summary.total <= 0)}
+        />
       </View>
     </SafeAreaView>
   );

@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View, Modal } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -10,7 +11,7 @@ import { GradientHeader } from '../../components/ui/GradientHeader';
 import { LoadingState } from '../../components/ui/LoadingState';
 import { PrimaryButton } from '../../components/ui/PrimaryButton';
 import { SegmentedTabs } from '../../components/ui/SegmentedTabs';
-import { ChevronDownIcon, ChevronUpIcon, WashingMachineIcon, HangerIcon, PlusIcon } from '../../components/ui/SvgIcons';
+import { ChevronDownIcon, ChevronUpIcon, WashingMachineIcon, HangerIcon, PlusIcon, CommunityChatIcon } from '../../components/ui/SvgIcons';
 import { COLORS } from '../../lib/constants';
 import { appService, fallbackData } from '../../services/appService';
 import { LaundryItem, TimeSlot } from '../../types/app';
@@ -31,6 +32,7 @@ interface ActiveBooking {
 }
 
 export default function LaundryScreen() {
+  const router = useRouter();
   const [active, setActive] = useState<LaundryTab>('new');
   const [laundryItems, setLaundryItems] = useState<LaundryItem[]>([]);
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
@@ -42,13 +44,28 @@ export default function LaundryScreen() {
   const [expandedSections, setExpandedSections] = useState({ wash_ironing: true, dry_cleaning: false });
   const [activeBookings, setActiveBookings] = useState<ActiveBooking[]>([]);
 
+  const withTimeout = async <T,>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error(message)), ms);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    }
+  };
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const [itemsRes, slotsRes] = await Promise.all([
-        appService.getLaundryItems(),
-        appService.getTimeSlots()
-      ]);
+      const [itemsRes, slotsRes] = await withTimeout(
+        Promise.all([appService.getLaundryItems(), appService.getTimeSlots()]),
+        3500,
+        'Laundry data request timed out'
+      );
 
       if (itemsRes.error) {
         throw new Error(itemsRes.error.message || 'Failed to load items');
@@ -64,8 +81,9 @@ export default function LaundryScreen() {
       setLaundryItems(fallbackData.laundryItems);
       setTimeSlots(fallbackData.timeSlots);
       setOfflineMode(true);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -168,6 +186,9 @@ export default function LaundryScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <GradientHeader title="Laundry Service" subtitle="We pick up, wash, and deliver." />
+      <Pressable style={styles.chatIconButton} onPress={() => router.push('/community-chat')}>
+        <CommunityChatIcon size={18} color="#6D28D9" />
+      </Pressable>
       <View style={styles.tabWrap}>
         <SegmentedTabs tabs={tabs} active={active} onChange={(key) => setActive(key as LaundryTab)} />
       </View>
@@ -471,6 +492,20 @@ export default function LaundryScreen() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#ECEFF5' },
+  chatIconButton: {
+    position: 'absolute',
+    top: 14,
+    right: 18,
+    zIndex: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C4B5FD',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   tabWrap: { marginTop: -18, paddingHorizontal: 16 },
   content: { padding: 16, paddingBottom: 100 },
   offlineNote: { color: '#7C8799', fontSize: 12, fontWeight: '600', textAlign: 'center', marginBottom: 8 },

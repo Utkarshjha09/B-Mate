@@ -10,7 +10,10 @@ import Svg, { Path } from 'react-native-svg';
 import { AppLogo } from '../components/ui/AppLogo';
 import { COLORS } from '../lib/constants';
 import { useAuth } from '../hooks/useAuth';
-import { supabase } from '../lib/supabase';
+import { hasSupabaseConfig, supabase, supabaseUrlUsed } from '../lib/supabase';
+import { AUTH_LOGIN_REDIRECT_URI } from '../lib/authRedirects';
+
+WebBrowser.maybeCompleteAuthSession();
 
 async function openAuthSessionWithTimeout(url: string, redirectUri: string, timeoutMs = 45000) {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -59,20 +62,31 @@ export default function AuthScreen() {
     try {
       if (isLogin) {
         await signIn(email.trim(), password);
+        router.replace('/(tabs)');
       } else {
         await signUp(name.trim(), email.trim(), password);
         Alert.alert('Account created', 'If email verification is enabled, please verify your email and then log in.');
         setIsLogin(true);
       }
+    } catch (submitError) {
+      Alert.alert('Login failed', submitError instanceof Error ? submitError.message : 'Unable to authenticate.');
     } finally {
       setBusy(false);
     }
   };
 
   const onSocialSignIn = async (provider: 'google' | 'github' | 'apple') => {
+    if (!hasSupabaseConfig || supabaseUrlUsed.includes('placeholder.supabase.co')) {
+      Alert.alert(
+        'Supabase not configured in build',
+        'This app build is missing EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_ANON_KEY. Set them in EAS Environment (preview), rebuild, then try social login again.'
+      );
+      return;
+    }
+
     setOauthBusy(provider);
     try {
-      const redirectTo = 'bmate://auth';
+      const redirectTo = AUTH_LOGIN_REDIRECT_URI;
 
       const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider,
@@ -117,6 +131,7 @@ export default function AuthScreen() {
         if (exchangeError) {
           throw exchangeError;
         }
+        router.replace('/(tabs)');
         return;
       }
 
@@ -138,6 +153,7 @@ export default function AuthScreen() {
         if (sessionError) {
           throw sessionError;
         }
+        router.replace('/(tabs)');
         return;
       }
 
